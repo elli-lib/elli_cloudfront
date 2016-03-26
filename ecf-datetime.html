@@ -19,16 +19,16 @@
 <p><a href="ecf-datetime.html#func-from-now.2F1">from-now/1</a> will also accept a non-negative integer, <code>n</code>,<br />
 and treat it as <code>`#(,n seconds)</code>.</p>
 <h4 id="example-usage">Example Usage</h4>
-<pre class="lfe"><code>&gt; (from-now 0)
-146780940
-&gt; (from-now #(0 seconds))
-146784542
+<pre class="lfe"><code>&gt; (from-now 42)
+1458994427
+&gt; (from-now #(0 days))
+1458994387
 &gt; (from-now #(1 hour))
-146784544
+1458997992
 &gt; (from-now #(60 minutes))
-146784546
+1458997996
 &gt; (from-now (+ (days 1) (hours 6)))
-146888948</code></pre>
+1459102403</code></pre>
 </div><div class="src-link"><a href="https://github.com/yurrriq/elli-cloudfront/blob/master/src/ecf-datetime.lfe#L44">view source</a></div></div><div class="public anchor" id="func-from-now.2F2"><h3>from-now/2</h3><div class="usage"><div class="sourceCode"><pre class="sourceCode commonlisp"><code class="sourceCode commonlisp">(<span class="dv">0</span> _unit)
 (<span class="dv">1</span> &#39;day)
 (<span class="dv">1</span> &#39;hour)
@@ -45,12 +45,12 @@ and treat it as <code>`#(,n seconds)</code>.</p>
 <span class="co">%% unless 1 =:= n, in which case</span>
 <span class="co">%% unit :: day | hour | minute | second</span></code></pre></div>
 <h4 id="example-usage">Example Usage</h4>
-<pre class="lfe"><code>&gt; (from-now 0 &#39;seconds)
-146784542
+<pre class="lfe"><code>&gt; (from-now 0 &#39;days)
+1458994421
 &gt; (from-now 1 &#39;hour)
-146784544
+1458998024
 &gt; (from-now 60 &#39;minutes)
-146784546</code></pre>
+1458998026</code></pre>
 </div><div class="src-link"><a href="https://github.com/yurrriq/elli-cloudfront/blob/master/src/ecf-datetime.lfe#L9">view source</a></div></div><div class="public anchor" id="func-hours.2F1"><h3>hours/1</h3><div class="usage"><div class="sourceCode"><pre class="sourceCode commonlisp"><code class="sourceCode commonlisp">(<span class="dv">0</span>)
 (<span class="dv">1</span>)
 (n (<span class="kw">when</span> (is_integer n) (<span class="kw">&gt;</span> n <span class="dv">0</span>)))</code></pre></div>
