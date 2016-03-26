@@ -1,13 +1,14 @@
 * elli-cloudfront
 [[https://travis-ci.org/yurrriq/elli-cloudfront][file:https://travis-ci.org/yurrriq/elli-cloudfront.svg?branch=master]]
+[[https://github.com/erlang/otp/releases][file:https://img.shields.io/badge/erlang-%3E%3D%2017.0-red.svg]]
+[[http://yurrriq.codes/elli-cloudfront][file:https://img.shields.io/badge/docs-100%25-green.svg]]
+[[file:LICENSE][file:https://img.shields.io/badge/license-BSD-blue.svg]]
 
 [[https://github.com/knutin/elli][Elli]] middleware to manage [[http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-cookies.html][CloudFront signed cookies]].
 
-*Requires Erlang 17.x or later.*
-
 ** Build
 #+BEGIN_SRC fish
-rebar3 copmile
+rebar3 compile
 #+END_SRC
 
 ** Example
