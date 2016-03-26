@@ -1,6 +1,5 @@
 * elli-cloudfront
-An minimal [[https://github.com/knutin/elli][elli]] web app to serve private resources from CloudFront,
-using signed cookies.
+[[https://github.com/knutin/elli][Elli]] middleware to manage [[http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-cookies.html][CloudFront signed cookies]].
 
 ** Build
 #+BEGIN_SRC fish
