@@ -19,12 +19,12 @@ unit :: days | hours | minutes | seconds.
 #### Example Usage
 
 ```lfe
-> (from-now 0 'seconds)
-146784542
+> (from-now 0 'days)
+1458994421
 > (from-now 1 'hour)
-146784544
+1458998024
 > (from-now 60 'minutes)
-146784546
+1458998026
 ```"
   ([0 _unit]   (now))
   ([1 'day]    (from-now 1 'days))
@@ -50,16 +50,16 @@ and treat it as `` `#(,n seconds) ``.
 #### Example Usage
 
 ```lfe
-> (from-now 0)
-146780940
-> (from-now #(0 seconds))
-146784542
+> (from-now 42)
+1458994427
+> (from-now #(0 days))
+1458994387
 > (from-now #(1 hour))
-146784544
+1458997992
 > (from-now #(60 minutes))
-146784546
+1458997996
 > (from-now (+ (days 1) (hours 6)))
-146888948
+1459102403
 ```"
   ;; n seconds
   ([0]                               (now))
