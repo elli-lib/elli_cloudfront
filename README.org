@@ -3,6 +3,8 @@
 
 [[https://github.com/knutin/elli][Elli]] middleware to manage [[http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-cookies.html][CloudFront signed cookies]].
 
+*Requires Erlang 17.x or later.*
+
 ** Build
 #+BEGIN_SRC fish
 rebar3 copmile
