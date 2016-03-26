@@ -1,17 +1,18 @@
 %% -*- erlang -*-
 
 {application,    'elli-cloudfront',
- [{description,  ""},
+ [{description,  "Elli middleware for signing CloudFront cookies."},
   {vsn,          "0.0.1"},
   {registered,   []},
   {applications, [ kernel
                  , stdlib
                  ]},
-  {mod,          {'ecf-app', []}},
-  {env,          []},
-  {modules,      []},
+  {env,          [ {'CloudFront-Key-Pair-Id', "{{KEY_PAIR_ID}}"}
+                 , {'CloudFront-Private-Key', "{{PRIVATE_KEY}}"}]},
+  {modules,      [ 'elli-cloudfront'
+                 , 'ecf-datetime']},
 
-  {contributors, ["Eric Bailey"]},
+  {maintainers,  ["Eric Bailey"]},
   {licenses,     ["BSD-3"]},
-  {links,        []}
+  {links,        [{"GitHub", "https://github.com/yurrriq/elli-cloudfront"}]}
  ]}.

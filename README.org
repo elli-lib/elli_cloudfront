@@ -6,3 +6,20 @@ using signed cookies.
 #+BEGIN_SRC fish
 rebar3 copmile
 #+END_SRC
+
+** Example
+[[file:priv/example.lfe][priv/example.lfe]]
+
+#+BEGIN_SRC fish
+lfe priv/example.lfe
+#+END_SRC
+
+#+BEGIN_SRC http
+HTTP/1.1 301 Moved Permanently
+Date: Sat, 26 Mar 2016 16:42:28 GMT
+Expires: Sat, 26 Mar 2016 17:42:28 GMT
+Location: https://d123456789abcde.cloudfront.net
+Set-Cookie: CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc29...
+Set-Cookie: CloudFront-Signature=UPXztjUr3ixNGOj8AXXcV8QXR7w_
+Set-Cookie: CloudFront-Key-Pair-Id={{KEY_PAIR_ID}}
+#+END_SRC
