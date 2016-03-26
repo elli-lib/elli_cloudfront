@@ -1,0 +1,17 @@
+%% -*- erlang -*-
+
+{application,    'elli-cloudfront',
+ [{description,  ""},
+  {vsn,          "0.0.1"},
+  {registered,   []},
+  {applications, [ kernel
+                 , stdlib
+                 ]},
+  {mod,          {'ecf-app', []}},
+  {env,          []},
+  {modules,      []},
+
+  {contributors, ["Eric Bailey"]},
+  {licenses,     ["BSD-3"]},
+  {links,        []}
+ ]}.

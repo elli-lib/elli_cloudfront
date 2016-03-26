@@ -1,0 +1,12 @@
+[{<<"elli">>,
+  {git,"git://github.com/knutin/elli.git",
+       {ref,"0cae1521190459bdb16958be7350191df710d799"}},
+  0},
+ {<<"elli_cookie">>,
+  {git,"git://github.com/yurrriq/elli_cookie.git",
+       {ref,"4d563eed9dcc5ab77ee4cef897921e259443007c"}},
+  0},
+ {<<"lfe">>,
+  {git,"git://github.com/rvirding/lfe.git",
+       {ref,"d9a4e4d26a40ddae5aea09244fcd7260cac3f4ac"}},
+  0}].

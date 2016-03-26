@@ -1,0 +1,8 @@
+* elli-cloudfront
+An minimal [[https://github.com/knutin/elli][elli]] web app to serve private resources from CloudFront,
+using signed cookies.
+
+** Build
+#+BEGIN_SRC fish
+rebar3 copmile
+#+END_SRC
