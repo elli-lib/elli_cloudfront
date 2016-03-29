@@ -1,7 +1,10 @@
-* elli-cloudfront
-[[https://travis-ci.org/yurrriq/elli-cloudfront][file:https://travis-ci.org/yurrriq/elli-cloudfront.svg?branch=master]]
+#+OPTIONS: ^:{} toc:nil
+#+STARTUP: showall
+
+* elli_cloudfront
+[[https://travis-ci.org/yurrriq/elli_cloudfront][file:https://travis-ci.org/yurrriq/elli_cloudfront.svg?branch=master]]
 [[https://github.com/erlang/otp/releases][file:https://img.shields.io/badge/erlang-%3E%3D%2017.0-red.svg]]
-[[http://yurrriq.codes/elli-cloudfront][file:https://img.shields.io/badge/docs-100%25-green.svg]]
+[[http://yurrriq.codes/elli_cloudfront][file:https://img.shields.io/badge/docs-100%25-green.svg]]
 [[file:LICENSE][file:https://img.shields.io/badge/license-BSD-blue.svg]]
 
 [[https://github.com/knutin/elli][Elli]] middleware to manage [[http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-cookies.html][CloudFront signed cookies]].
