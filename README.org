@@ -15,15 +15,16 @@ rebar3 compile
 [[file:priv/example.lfe][priv/example.lfe]]
 
 #+BEGIN_SRC fish
+# rebar3 compile
 lfe priv/example.lfe
 #+END_SRC
 
 #+BEGIN_SRC http
 HTTP/1.1 301 Moved Permanently
-Date: Sat, 26 Mar 2016 16:42:28 GMT
-Expires: Sat, 26 Mar 2016 17:42:28 GMT
+Date: Wed, 30 Mar 2016 01:02:46 GMT
+Expires: Wed, 30 Mar 2016 02:02:46 GMT
 Location: https://d123456789abcde.cloudfront.net
-Set-Cookie: CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc29...
-Set-Cookie: CloudFront-Signature=UPXztjUr3ixNGOj8AXXcV8QXR7w_
-Set-Cookie: CloudFront-Key-Pair-Id={{KEY_PAIR_ID}}
+Set-Cookie: CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2V4YW1wbGUuY29tLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NTkyODUzNjZ9fX1dfQ__
+Set-Cookie: CloudFront-Signature=QgpGJ04j48DNbLdaC5bRJBQNzwPSQvtkY-y-VosdRaQ0RS5yLd~JA34VD~G5OsroUJPNChN4ptCTFPfdEazcxbmrAfHvpY~NW-3UWXJYqQ~8ZqnOApUnoooH89T~6N8ul4Ss1y6bSFH9pAq2MQVELupmtW359hd~-4oC7kKJrP-4TJrrGA6OwNQ-~JKRDpapA0E8OR8Ns-8OOh3FUQruwrWuR6edZUuq02WvhyNLVkLE8O5avLl7EwVNSx2bNXkTrIsI4gGB7sBOFbaW62RkSb~dmYu~Db06ytzYfW61R49WkXzAVgzsu2SDsI6KMX6jayA9UTnt40OFgbuQZkE34g__
+Set-Cookie: CloudFront-Key-Pair-Id=AKEXAMPLE123
 #+END_SRC

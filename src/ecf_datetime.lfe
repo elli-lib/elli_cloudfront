@@ -1,12 +1,12 @@
-(defmodule ecf-datetime
+(defmodule ecf_datetime
   (doc "Unix epoch utility functions.")
-  (export (from-now 2) (from-now 1)
+  (export (from_now 2) (from_now 1)
           (now 0)
           (days 1) (hours 1) (minutes 1)))
 
 (defmacro bad-time-diff (diff) `(throw `#(error #(invalid-time-diff ,'diff))))
 
-(defun from-now
+(defun from_now
   "Return the the number of seconds the Unix epoch `n` `unit`s from now.
 
 ```erlang
@@ -19,46 +19,46 @@ unit :: days | hours | minutes | seconds.
 #### Example Usage
 
 ```lfe
-> (from-now 0 'days)
+> (from_now 0 'days)
 1458994421
-> (from-now 1 'hour)
+> (from_now 1 'hour)
 1458998024
-> (from-now 60 'minutes)
+> (from_now 60 'minutes)
 1458998026
 ```"
   ([0 _unit]   (now))
-  ([1 'day]    (from-now 1 'days))
-  ([1 'hour]   (from-now 1 'hours))
-  ([1 'minute] (from-now 1 'minutes))
-  ([1 'second] (from-now 1 'seconds))
+  ([1 'day]    (from_now 1 'days))
+  ([1 'hour]   (from_now 1 'hours))
+  ([1 'minute] (from_now 1 'minutes))
+  ([1 'second] (from_now 1 'seconds))
   ([n 'days] (when (is_integer n) (> n 0))
-   (from-now (days n)))
+   (from_now (days n)))
   ([n 'hours] (when (is_integer n) (> n 0))
-   (from-now (hours n)))
+   (from_now (hours n)))
   ([n 'minutes] (when (is_integer n) (> n 0))
-   (from-now (minutes n)))
+   (from_now (minutes n)))
   ([n 'seconds] (when (is_integer n) (> n 0))
-   (from-now n))
+   (from_now n))
   ([n unit] (bad-time-diff `#(,n ,unit))))
 
-(defun from-now
-  "Equivalent to [[from-now/2]] but with a single argument, `` `#(,n ,unit) ``.
+(defun from_now
+  "Equivalent to [[from_now/2]] but with a single argument, `` `#(,n ,unit) ``.
 
-[[from-now/1]] will also accept a non-negative integer, `n`,
+[[from_now/1]] will also accept a non-negative integer, `n`,
 and treat it as `` `#(,n seconds) ``.
 
 #### Example Usage
 
 ```lfe
-> (from-now 42)
+> (from_now 42)
 1458994427
-> (from-now #(0 days))
+> (from_now #(0 days))
 1458994387
-> (from-now #(1 hour))
+> (from_now #(1 hour))
 1458997992
-> (from-now #(60 minutes))
+> (from_now #(60 minutes))
 1458997996
-> (from-now (+ (days 1) (hours 6)))
+> (from_now (+ (days 1) (hours 6)))
 1459102403
 ```"
   ;; n seconds
@@ -66,18 +66,18 @@ and treat it as `` `#(,n seconds) ``.
   ([n] (when (is_integer n) (> n 0)) (+ n (now)))
   ;; `#(,n ,unit)
   ([`#(0 ,_unit)] (now))
-  ([#(1 day)]     (from-now #(1 days)))
-  ([#(1 hour)]    (from-now #(1 hours)))
-  ([#(1 minute)]  (from-now #(1 minutes)))
-  ([#(1 second)]  (from-now #(1 seconds)))
+  ([#(1 day)]     (from_now #(1 days)))
+  ([#(1 hour)]    (from_now #(1 hours)))
+  ([#(1 minute)]  (from_now #(1 minutes)))
+  ([#(1 second)]  (from_now #(1 seconds)))
   ([`#(,n days)] (when (is_integer n) (> n 0))
-   (from-now (days n)))
+   (from_now (days n)))
   ([`#(,n hours)] (when (is_integer n) (> n 0))
-   (from-now (hours n)))
+   (from_now (hours n)))
   ([`#(,n minutes)] (when (is_integer n) (> n 0))
-   (from-now (minutes n)))
+   (from_now (minutes n)))
   ([`#(,n seconds)] (when (is_integer n) (> n 0))
-   (from-now n))
+   (from_now n))
   ([x] (bad-time-diff x)))
 
 (defun now ()
