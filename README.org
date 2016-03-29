@@ -28,3 +28,38 @@ Set-Cookie: CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2V4YW
 Set-Cookie: CloudFront-Signature=QgpGJ04j48DNbLdaC5bRJBQNzwPSQvtkY-y-VosdRaQ0RS5yLd~JA34VD~G5OsroUJPNChN4ptCTFPfdEazcxbmrAfHvpY~NW-3UWXJYqQ~8ZqnOApUnoooH89T~6N8ul4Ss1y6bSFH9pAq2MQVELupmtW359hd~-4oC7kKJrP-4TJrrGA6OwNQ-~JKRDpapA0E8OR8Ns-8OOh3FUQruwrWuR6edZUuq02WvhyNLVkLE8O5avLl7EwVNSx2bNXkTrIsI4gGB7sBOFbaW62RkSb~dmYu~Db06ytzYfW61R49WkXzAVgzsu2SDsI6KMX6jayA9UTnt40OFgbuQZkE34g__
 Set-Cookie: CloudFront-Key-Pair-Id=AKEXAMPLE123
 #+END_SRC
+
+** Minimal example ~elli_cloudfront_handler~
+#+BEGIN_SRC lfe :tangle priv/example-cf-handler.lfe
+(defmodule example-cf-handler
+  (behaviour elli_cloudfront_handler)
+  ;; elli_cloudfront_handler callbacks
+  (export (is_authorized 3)
+          (store_ticket 2) (validate_ticket 2) (delete_ticket 1)))
+
+;; Defines #ticket{} and includes elli.hrl
+(include-lib "elli_cloudfront/include/elli_cloudfront.hrl")
+
+(defun is_authorized (_req _service _args)
+  ;; TODO:
+  ;; - Parse req for user info
+  ;; - Confirm or deny user is authorized to view service
+  ;; - Return a user id
+  #(ok #"USERID"))
+
+(defun store_ticket (_user _ticket)
+  ;; TODO: Store user's ticket
+  'ok)
+
+(defun validate_ticket (_req _token)
+  ;; TODO:
+  ;; - Parse req for user info
+  ;; - Fetch ticket by token
+  ;; - Confirm or deny that it belongs to the user
+  ;; - Return the "service" associated with the ticket
+  #(ok #"https://d123456789abcde.cloudfront.net"))
+
+(defun delete_ticket (_token)
+  ;; TODO: Delete the ticket with the given token
+  'ok)
+#+END_SRC
