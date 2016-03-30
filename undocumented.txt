@@ -1,5 +1,2 @@
 == elli_cloudfront ==
-set_cookies_path/1
-opts/0
-handle_event/3
 handle/2
