@@ -2,7 +2,7 @@
 
 {application,    elli_cloudfront,
  [{description,  "Elli middleware to manage CloudFront signed cookies."},
-  {vsn,          "0.0.2"},
+  {vsn,          "0.0.3"},
   {registered,   []},
   {applications, [ kernel
                  , stdlib
@@ -40,7 +40,6 @@
         "-----END RSA PRIVATE KEY-----">>}]},
   {modules,      [ elli_cloudfront
                  , elli_cloudfront_handler
-                 , ecf_datetime
                  ]},
 
   {maintainers,  ["Eric Bailey"]},
