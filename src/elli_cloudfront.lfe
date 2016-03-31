@@ -3,8 +3,10 @@
   (behaviour elli_handler)
   ;; elli_handler callbacks
   (export (handle 2) #|(handle_event 3)|#)
-  ;; CloudFront signed cookie
+  ;; CloudFront signed cookies
   (export (cookie_data 3))
+  ;; CloudFront signed URL (or query params)
+  (export (signed_params 3) (signed_url 3))
   ;; Config helper function
   (export (get_env 0)))
 
@@ -16,7 +18,7 @@
   "Evaluate all given s-expressions and functions in order,
 for their side effects, with the value of `x` as the first argument
 and return `x`."
-  (`(,x . ,sexps)
+  (`[,x . ,sexps]
    `(let ((,'x* ,x))
       ,@(lists:map
           (match-lambda
@@ -58,18 +60,55 @@ and return `x`."
 ;;;===================================================================
 
 (defun cookie_data (resource expiry args)
-  "Given a `resource` URL, `expiry` and proplist of `args`.
+  "Given a binary `resource` URL, `expiry` (`` `#(,n ,unit) ``),
 return a proplist of CloudFront cookies.
 
 If `expiry` is invalid input to [[from_now/1]], or
 one of `` 'key_pair_id `` or `` 'private_key ``
 is missing from `args`, throw an error.
 
+The scope of the resultant cookie data is of the form `http*://{{host}}/*`.
+
 See also: [[key_pair_id/1]] and [[private_key/1]]"
+  (cred->cookies (credentials resource expiry args)))
+
+(defun cred->cookies (cred)
+  (-> (match-lambda
+        ([`#(policy      ,value)] `#(#"CloudFront-Policy"      ,value))
+        ([`#(signature   ,value)] `#(#"CloudFront-Signature"   ,value))
+        ([`#(key_pair_id ,value)] `#(#"CloudFront-Key-Pair-Id" ,value)))
+      (lists:map cred)))
+
+(defun signed_url (resource expiry args)
+  "Equivalent to [[cookie_data/3]], but returns a signed URL.
+
+N.B. `resource` is not sanity checked at all, so it's up to you to ensure its
+correctness, and unlike [[cookie_data/3]], it is not parsed into a wildcard
+scope, but rather used as is.
+
+See also: [[signed_params/3]]"
+  (->> (signed_params resource expiry args)
+       (lists:map (match-lambda ([`#(,k ,v)] `[,k #"=" ,v])))
+       (intersperse #"&")
+       (list* resource #"?")
+       (iolist_to_binary)))
+
+(defun signed_params (resource expiry args)
+  "Equivalent to [[signed_url/3]], but returns a proplist of URL parameters."
+  (cred->params (credentials resource expiry args)))
+
+(defun cred->params (cred)
+  (-> (match-lambda
+        ([`#(policy      ,value)] `#(#"Policy"      ,value))
+        ([`#(signature   ,value)] `#(#"Signature"   ,value))
+        ([`#(key_pair_id ,value)] `#(#"Key-Pair-Id" ,value)))
+      (lists:map cred)))
+
+(defun credentials (resource expiry args)
   (let ((raw-policy (policy resource expiry)))
-    `[#(#"CloudFront-Policy"      ,(safe-base64 raw-policy))
-      #(#"CloudFront-Signature"   ,(sign raw-policy (private_key args)))
-      #(#"CloudFront-Key-Pair-Id" ,(key_pair_id args))]))
+    `[#(policy      ,(safe-base64 raw-policy))
+      #(signature   ,(sign raw-policy (private_key args)))
+      #(key_pair_id ,(key_pair_id args))]))
 
 (defun get-ticket (req args)
   (let ((handler (handler args))
