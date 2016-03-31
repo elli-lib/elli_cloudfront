@@ -1,0 +1,187 @@
+<!-- -*- markdown -*- -->
+This is a Literate Lisp Flavoured Erlang ([LLFE][]) file,
+which generates [example-cf-handler.lfe][] and [example.lfe][].
+
+[LLFE]: https://github.com/llfe/llfe
+[example-cf-handler.lfe]: example-cf-handler.lfe
+[example.lfe]: example.lfe
+
+
+# Example `elli_cloudfront_handler`
+```{.lfe name="file:example-cf-handler.lfe"}
+(defmodule example-cf-handler
+  (behaviour elli_cloudfront_handler)
+  ;; elli_cloudfront_handler callbacks
+  (export (is_authorized 3)
+          (store_ticket 2) (validate_ticket 2) (delete_ticket 1)))
+
+;; Defines #ticket{} and includes elli.hrl
+(include-lib "elli_cloudfront/include/elli_cloudfront.hrl")
+
+```
+
+## Callbacks
+An [`elli_cloudfront_handler`](../src/elli_cloudfront_handler.erl) is expected
+to export four callback functions: `is_authorized/3`, `store_ticket/2`,
+`validate_ticket/2` and `delete_ticket/1`.
+
+```{.lfe name="file:example-cf-handler.lfe"}
+<<is_authorized/3>>
+
+<<store_ticket/2>>
+
+<<validate_ticket/2>>
+
+<<delete_ticket/1>>
+```
+
+### is_authorized/3
+This function, given an `elli` request, a binary CloudFront URL and
+`elli_cloudfront`'s specified arguments, should:
+-    Parse the request for user info.
+<br> *This will most likely be a session cookie or query parameter.*
+
+-    Confirm or deny the parsed user is authorized to access the resource.
+<br> *What exactly is required to be authorized is up to you.*
+
+-    Return an authorized user ID in a 2-tuple of the form, `` `#(ok ,user-id) ``.
+<br> *This can be any term, but should be unique per user.*
+
+If the user is **not** authorized, or something else goes awry,
+return a 2-tuple of the form, `` `#(error ,reason) ``.
+
+```{.lfe name="is_authorized/3"}
+(defun is_authorized (_req _service _args)
+  ;; TODO:
+  ;; - Parse req for user info
+  ;; - Confirm or deny user is authorized to view service
+  ;; - Return a user id
+  #(ok #"USERID"))
+```
+
+### store_ticket/2
+```{.lfe name="store_ticket/2"}
+(defun store_ticket (_user _ticket)
+  ;; TODO: Store user's ticket
+  'ok)
+```
+
+### validate_ticket/2
+```{.lfe name="validate_ticket/2"}
+(defun validate_ticket (_req _token)
+  ;; TODO:
+  ;; - Parse req for user info
+  ;; - Fetch ticket by token
+  ;; - Confirm or deny that it belongs to the user
+  ;; - Return the "service" associated with the ticket
+  #(ok #"https://d123456789abcde.cloudfront.net"))
+```
+
+### delete_ticket/1
+```{.lfe name="delete_ticket/1"}
+(defun delete_ticket (_token)
+  ;; TODO: Delete the ticket with the given token
+  'ok)
+```
+
+# Contrived Example
+First, make sure the code path is set up correctly, i.e. the `elli_cloudfront`
+application is loaded and [`color`](https://github.com/julianduque/erlang-color)
+is on the code path.
+```{.lfe name="file:example.lfe"}
+(application:load 'elli_cloudfront)
+
+(code:add_patha "./_build/default/plugins/color/ebin")
+
+```
+
+Define `colorize/2` to help print header name/value pairs à la
+[HTTPie](http://httpie.org).
+```{.lfe name="file:example.lfe"}
+(defun colorize (k v) (list (color:green k) (color:red #": ") (color:yellow v)))
+```
+
+Define `new-cookie/2` to map over a property list and return a colorized iolist
+representing the resultant `Set-Cookie` headers.
+```{.lfe name="file:example.lfe"}
+(defun new-cookie
+  ([`#(,name ,value)]
+   (apply #'colorize/2 (tuple_to_list (elli_cookie:new name value)))))
+
+```
+
+Define `pprint/2` to take a `format-iolist` and some `data` and print it via
+`lfe_io:format/2`.
+```{.lfe name="file:example.lfe"}
+(defun pprint (format-iolist data)
+  (lfe_io:format (binary_to_list (iolist_to_binary format-iolist)) data))
+
+```
+
+Define `unix->string/1` to take a Unix timestamp and return its
+[RFC 1123](http://www.ietf.org/rfc/rfc1123.txt) representation.
+```{.lfe name="file:example.lfe"}
+(defun unix->string (seconds)
+  (let* ((gregorian (+ 62167219200 seconds))
+         (datetime  (calendar:gregorian_seconds_to_datetime gregorian)))
+    (httpd_util:rfc1123_date datetime)))
+
+```
+
+Since they're not exported, redefine a couple time-related helper functions,
+from the `elli_cloudfront` module.  `now/0` returns the current Unix time and
+this specialized `from_now/1` takes a tuple, `#(1 hour)`, and returns the Unix
+time one hour from now.
+```{.lfe name="file:example.lfe"}
+(defun now ()
+  (let ((`#(,mega-secs ,secs ,_micro-secs) (os:timestamp)))
+    (+ (* mega-secs 1000000) secs)))
+
+(defun from_now ([#(1 hour)] (+ (now) 3600)))
+```
+
+Finally, a...
+```{.lfe name="file:example.lfe"}
+
+
+;;;===================================================================
+;;; Contrived example
+;;;===================================================================
+
+```
+
+Mock a response to a `GET /auth/set_cookies` request, using a bogus key pair ID,
+private key and CloudFront URL.
+```{.lfe name="file:example.lfe"}
+(let* ((resource   #"http://example.com/*")
+       (expiry     #(1 hour))
+       (args       (elli_cloudfront:get_env))
+       (cookies    (elli_cloudfront:cookie_data resource expiry args))
+       (date       (unix->string (now)))
+       (expires    (unix->string (from_now expiry))))
+  (pprint (list (color:blue #"HTTP") (color:red #"/") (color:magenta "1.1 302 ")
+                (color:green (httpd_util:reason_phrase 302)) #"\n"
+                (colorize #"Date"     #"~s\n")
+                (colorize #"Expires"  #"~s\n")
+                (colorize #"Location"
+                          #"https://d123456789abcde.cloudfront.net\n")
+                #"~s\n~s\n~s\n\n")
+          (list* date expires (lists:map #'new-cookie/1 cookies))))
+```
+
+<p align=center>:computer: :zap: :cloud: :zap: :computer: :zap: :cloud: :zap:
+:computer: :zap: :cloud: :zap: :computer: :zap: :cloud: :zap: :computer: :zap:
+:cloud: :zap: :computer: :zap: :cloud: :zap: :computer: :zap: :cloud: :zap:
+:computer: </p>
+
+```{.http name="output"}
+HTTP/1.1 302 Moved Temporarily
+Date: Thu, 31 Mar 2016 14:52:17 GMT
+Expires: Thu, 31 Mar 2016 15:52:17 GMT
+Location: https://d123456789abcde.cloudfront.net
+Set-Cookie: CloudFront-Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2V4YW1wbGUuY29tLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NTk0MjE1Mzd9fX1dfQ__
+Set-Cookie: CloudFront-Signature=PczgMBdW7abkfiPgt3rXWIZ0BVj4Umpk-cfUc-MzS1BSp-rM-14ynGcsHGXlAu6c6YK3GBEBRGlweyvYRdZj6PHYdpTBOfapDnv6l5Qa~wRuMNMoIeHcpXSYa8-pT9Ag90LBMD2JzwPG1RLnEzU7Cjuv2wnccGMe3PQJ0AkI8oShzisy-7Q8O49NUQ6dU-imXdcl7TBknmwgpVJEHq501pLLVfK5gzlD8vmcjXwg9dN9CfuUsQ6EAYVTo9Sm1dsXLjgT4dZFTWhOpd452Yw32B-lNFRpykIWybY6nG9p7LHYtZFJUnnMcH-wpsfxfrK32Wz-jSpI6J040yh5MiE~rA__
+Set-Cookie: CloudFront-Key-Pair-Id=AKEXAMPLE123
+```
+
+<p align=center>QED</a>

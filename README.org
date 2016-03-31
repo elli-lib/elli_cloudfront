@@ -4,7 +4,7 @@
 * elli_cloudfront
 [[https://travis-ci.org/yurrriq/elli_cloudfront][file:https://travis-ci.org/yurrriq/elli_cloudfront.svg?branch=master]]
 [[https://github.com/erlang/otp/releases][file:https://img.shields.io/badge/erlang-%3E%3D%2017.0-red.svg]]
-[[http://yurrriq.codes/elli_cloudfront][file:https://img.shields.io/badge/docs-100%25-green.svg]]
+[[http://yurrriq.codes/elli_cloudfront][file:https://img.shields.io/badge/docs-67%25-green.svg]]
 [[file:LICENSE][file:https://img.shields.io/badge/license-BSD-blue.svg]]
 
 [[https://github.com/knutin/elli][Elli]] middleware to manage [[http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-signed-cookies.html][CloudFront signed cookies]].
@@ -23,7 +23,7 @@ lfe priv/example.lfe
 #+END_SRC
 
 #+BEGIN_SRC http
-HTTP/1.1 301 Moved Permanently
+HTTP/1.1 302 Found
 Date: Wed, 30 Mar 2016 01:02:46 GMT
 Expires: Wed, 30 Mar 2016 02:02:46 GMT
 Location: https://d123456789abcde.cloudfront.net
