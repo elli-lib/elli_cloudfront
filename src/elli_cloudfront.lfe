@@ -89,14 +89,18 @@ scope, but rather used as is.
 
 See also: [[signed_params/3]]"
   (->> (signed_params resource expiry args)
-       (lists:map (match-lambda ([`#(,k ,v)] `[,k #"=" ,v])))
-       (intersperse #"&")
+       (params->query-string)
        (list* resource #"?")
        (iolist_to_binary)))
 
 (defun signed_params (resource expiry args)
   "Equivalent to [[signed_url/3]], but returns a proplist of URL parameters."
   (cred->params (credentials resource expiry args)))
+
+(defun params->query-string (params)
+  (->> params
+       (lists:map (match-lambda ([`#(,k ,v)] `[,k #"=" ,v])))
+       (intersperse #"&")))
 
 (defun cred->params (cred)
   (-> (match-lambda
