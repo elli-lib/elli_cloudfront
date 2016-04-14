@@ -253,7 +253,7 @@ Default: `` '[#\"auth\" #\"get_ticket\"] ``"
 
 (defun set_cookies_location (service token args)
   `[#"https://" ,(get-host service) #"/"
-    ,(intersperse #"/" (set_cookies_path args))
+    ,(filename:join (set_cookies_path args))
     #"?ticket=" ,token])
 
 (defun new_token ()
