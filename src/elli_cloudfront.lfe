@@ -8,7 +8,7 @@
   ;; CloudFront signed URL (or query params)
   (export (signed_params 3) (signed_url 3))
   ;; Config helper function
-  (export (get_env 0))
+  (export (get_env 1))
   (import (rename erlang ((function_exported 3) exported?))))
 
 (include-lib "clj/include/compose.lfe")
@@ -171,17 +171,31 @@
 ;;; Config helper functions
 ;;;===================================================================
 
-(defun get_env ()
-  "Return a property list with keys, `` 'key_pair_id `` and `` 'private_key ``.
+(defun get_env (app)
+  "Given an `app` name, return a property list with keys,
+  `` 'key_pair_id `` and `` 'private_key ``.
 
-  If either are missing, throw a descriptive error."
-  (doto (-> (match-lambda
-              ([`#(key_pair_id ,_)] 'true)
-              ([`#(private_key ,_)] 'true)
-              ([_]                  'false))
-            (lists:filter (application:get_all_env (MODULE))))
-    (key_pair_id)                       ; Validate key_pair_id
-    (private_key)))                     ; Validate private_key
+  If either are missing, throw a descriptive error.
+
+  `key_pair_id` must be present in `elli_cloudfront`'s env and `private_key`
+  is the contents `{{key_pair_id}}.key` in `app`'s `priv` directory.
+
+  If the `.key` file cannot be found, throw an error."
+  (->> (application:get_env (MODULE) 'key_pair_id 'undefined)
+       (tuple 'key_pair_id) (list)
+       (get_env (priv_dir app))))
+
+(defun get_env (priv-dir args)
+  (-> (->> (let*  ((key_pair_id (key_pair_id args)) ; Validate key_pair_id
+                   (key-file    (++ (binary_to_list key_pair_id) ".key")))
+             (try
+               (let ((`#(ok ,private_key) (->> (filename:join priv-dir key-file)
+                                               (file:read_file))))
+                 (cons `#(private_key ,private_key)
+                       (proplists:delete 'private_key args)))
+               (catch
+                 (_ (throw `#(error #(missing ,key-file))))))))
+      (doto (private_key))))            ; Validate private_key
 
 (defun handler (args)
   (case (proplists:get_value 'handler args)
@@ -203,6 +217,11 @@
   (case (proplists:get_value 'private_key args)
     ('undefined (throw #(error #(missing private_key))))
     (value      (->> value (assert-binary 'private_key)))))
+
+(defun priv_dir (app)
+  (case (code:priv_dir app)
+    (#(error bad_name) (throw `#(error #(bad_name ,app))))
+    (priv_dir          priv_dir)))
 
 (defun assert-binary (k v)
   (if (is_binary v) v (throw `#(error #(non_binary ,k ,v)))))
