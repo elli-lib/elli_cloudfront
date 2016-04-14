@@ -17,8 +17,8 @@
 
 (defmacro doto
   "Evaluate all given s-expressions and functions in order,
-for their side effects, with the value of `x` as the first argument
-and return `x`."
+  for their side effects, with the value of `x` as the first argument
+  and return `x`."
   (`[,x . ,sexps]
    `(let ((,'x* ,x))
       ,@(lists:map
@@ -62,15 +62,15 @@ and return `x`."
 
 (defun cookie_data (resource expiry args)
   "Given a binary `resource` URL, `expiry` (`` `#(,n ,unit) ``),
-return a proplist of CloudFront cookies.
+  return a proplist of CloudFront cookies.
 
-If `expiry` is invalid input to [[from_now/1]], or
-one of `` 'key_pair_id `` or `` 'private_key ``
-is missing from `args`, throw an error.
+  If `expiry` is invalid input to [[from_now/1]], or
+  one of `` 'key_pair_id `` or `` 'private_key ``
+  is missing from `args`, throw an error.
 
-The scope of the resultant cookie data is of the form `http*://{{host}}/*`.
+  The scope of the resultant cookie data is of the form `http*://{{host}}/*`.
 
-See also: [[key_pair_id/1]] and [[private_key/1]]"
+  See also: [[key_pair_id/1]] and [[private_key/1]]"
   (cred->cookies (credentials resource expiry args)))
 
 (defun cred->cookies (cred)
@@ -83,11 +83,11 @@ See also: [[key_pair_id/1]] and [[private_key/1]]"
 (defun signed_url (resource expiry args)
   "Equivalent to [[cookie_data/3]], but returns a signed URL.
 
-N.B. `resource` is not sanity checked at all, so it's up to you to ensure its
-correctness, and unlike [[cookie_data/3]], it is not parsed into a wildcard
-scope, but rather used as is.
+  N.B. `resource` is not sanity checked at all, so it's up to you to ensure its
+  correctness, and unlike [[cookie_data/3]], it is not parsed into a wildcard
+  scope, but rather used as is.
 
-See also: [[signed_params/3]]"
+  See also: [[signed_params/3]]"
   (->> (signed_params resource expiry args)
        (params->query-string)
        (list* resource #"?")
@@ -174,7 +174,7 @@ See also: [[signed_params/3]]"
 (defun get_env ()
   "Return a property list with keys, `` 'key_pair_id `` and `` 'private_key ``.
 
-If either are missing, throw a descriptive error."
+  If either are missing, throw a descriptive error."
   (doto (-> (match-lambda
               ([`#(key_pair_id ,_)] 'true)
               ([`#(private_key ,_)] 'true)
@@ -191,7 +191,7 @@ If either are missing, throw a descriptive error."
 (defun key_pair_id (args)
   "Given a proplist of `args`, return the `` 'key_pair_id ``.
 
-If it is missing, throw `#(error #(missing key_pair_id))`."
+  If it is missing, throw `#(error #(missing key_pair_id))`."
   (case (proplists:get_value 'key_pair_id args)
     ('undefined (throw #(error #(missing key_pair_id))))
     (value      (->> value (assert-binary 'key_pair_id)))))
@@ -199,7 +199,7 @@ If it is missing, throw `#(error #(missing key_pair_id))`."
 (defun private_key (args)
   "Given a proplist of `args`, return the `` 'private_key ``.
 
-If it is missing, throw `#(error #(missing private_key))`."
+  If it is missing, throw `#(error #(missing private_key))`."
   (case (proplists:get_value 'private_key args)
     ('undefined (throw #(error #(missing private_key))))
     (value      (->> value (assert-binary 'private_key)))))
@@ -210,7 +210,7 @@ If it is missing, throw `#(error #(missing private_key))`."
 (defun get_ticket_path (args)
   "Given a property list of `args`, return the value of `` 'get_ticket_path ``.
 
-Default: `` '[#\"auth\" #\"get_ticket\"] ``"
+  Default: `` '[#\"auth\" #\"get_ticket\"] ``"
   (proplists:get_value 'get_ticket_path args '[#"auth" #"get_ticket"]))
 
 (defun set_cookies_path (args)
@@ -262,7 +262,7 @@ Default: `` '[#\"auth\" #\"get_ticket\"] ``"
 
 (defun new_token (n)
   "Generate `n` bytes randomly uniform `0..255`, and return the result
-URL-safe base64 encoded, i.e. with `+=/` replaced with `-_~`, respectively."
+  URL-safe base64 encoded, i.e. with `+=/` replaced with `-_~`, respectively."
   (safe-base64 (crypto:strong_rand_bytes n)))
 
 (defun req->resource (req) (host->resource (get-host (service req))))
@@ -317,14 +317,14 @@ URL-safe base64 encoded, i.e. with `+=/` replaced with `-_~`, respectively."
 
 (defun intersperse
   "Given a element and a list, intersperse that element between the elemensts
-of the list. For example,
+  of the list. For example,
 
-```lfe
-> (intersperse #\, \"abcde\")
-\"a,b,c,d,e\"
-```
+  ```lfe
+  > (intersperse #\, \"abcde\")
+  \"a,b,c,d,e\"
+  ```
 
-Ported from Haskell's [`Data.List.intersperse`](https://hackage.haskell.org/package/base-4.8.2.0/docs/src/Data.OldList.html#intersperse)."
+  Ported from Haskell's [`Data.List.intersperse`](https://hackage.haskell.org/package/base-4.8.2.0/docs/src/Data.OldList.html#intersperse)."
   ([_    ()]          [])
   ([sep `(,x . ,xs)] `[,x . ,(-intersperse sep xs)]))
 
@@ -347,23 +347,23 @@ Ported from Haskell's [`Data.List.intersperse`](https://hackage.haskell.org/pack
 (defun from_now
   "Return the the number of seconds the Unix epoch `n` `unit`s from now.
 
-```erlang
-n    :: non_neg_integer(),
-unit :: days | hours | minutes | seconds.
-%% unless 1 =:= n, in which case
-%% unit :: day | hour | minute | second
-```
+  ```erlang
+  n    :: non_neg_integer(),
+  unit :: days | hours | minutes | seconds.
+  %% unless 1 =:= n, in which case
+  %% unit :: day | hour | minute | second
+  ```
 
-#### Example Usage
+  #### Example Usage
 
-```lfe
-> (from_now 0 'days)
-1458994421
-> (from_now 1 'hour)
-1458998024
-> (from_now 60 'minutes)
-1458998026
-```"
+  ```lfe
+  > (from_now 0 'days)
+  1458994421
+  > (from_now 1 'hour)
+  1458998024
+  > (from_now 60 'minutes)
+  1458998026
+  ```"
   ([0 _unit]   (now))
   ([1 'day]    (from_now 1 'days))
   ([1 'hour]   (from_now 1 'hours))
@@ -382,23 +382,23 @@ unit :: days | hours | minutes | seconds.
 (defun from_now
   "Equivalent to [[from_now/2]] but with a single argument, `` `#(,n ,unit) ``.
 
-[[from_now/1]] will also accept a non-negative integer, `n`,
-and treat it as `` `#(,n seconds) ``.
+  [[from_now/1]] will also accept a non-negative integer, `n`,
+  and treat it as `` `#(,n seconds) ``.
 
-#### Example Usage
+  #### Example Usage
 
-```lfe
-> (from_now 42)
-1458994427
-> (from_now #(0 days))
-1458994387
-> (from_now #(1 hour))
-1458997992
-> (from_now #(60 minutes))
-1458997996
-> (from_now (+ (days 1) (hours 6)))
-1459102403
-```"
+  ```lfe
+  > (from_now 42)
+  1458994427
+  > (from_now #(0 days))
+  1458994387
+  > (from_now #(1 hour))
+  1458997992
+  > (from_now #(60 minutes))
+  1458997996
+  > (from_now (+ (days 1) (hours 6)))
+  1459102403
+  ```"
   ;; n seconds
   ([0] (now))
   ([n] (when (is_integer n) (> n 0))
