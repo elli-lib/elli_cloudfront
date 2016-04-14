@@ -8,7 +8,8 @@
   ;; CloudFront signed URL (or query params)
   (export (signed_params 3) (signed_url 3))
   ;; Config helper function
-  (export (get_env 0)))
+  (export (get_env 0))
+  (import (rename erlang ((function_exported 3) exported?))))
 
 (include-lib "clj/include/compose.lfe")
 
@@ -121,13 +122,13 @@ See also: [[signed_params/3]]"
          (_other        #(500 [] #"")))))))
 
 (defun authorized? (handler service req args)
-  (andalso (erlang:function_exported handler 'is_authorized 3)
+  (andalso (exported? handler 'is_authorized 3)
            (case (call handler 'is_authorized req service args)
              (`#(ok ,user) `#(ok ,user))
              (_            'false))))
 
 (defun create-ticket (handler service user)
-  (if (erlang:function_exported handler 'store_ticket 2)
+  (if (exported? handler 'store_ticket 2)
     (let ((ticket (make-ticket token (new_token) user user service service)))
       (case (call handler 'store_ticket user ticket)
         ('ok                `#(ok ,(ticket-token ticket)))
@@ -149,14 +150,14 @@ See also: [[signed_params/3]]"
          #(500 [] #""))))))
 
 (defun validate-ticket (handler req)
-  (andalso (erlang:function_exported handler 'validate_ticket 2)
+  (andalso (exported? handler 'validate_ticket 2)
            (let ((token (ticket req)))
              (case (call handler 'validate_ticket req token)
                (`#(ok ,service)    `#(ok ,token ,service))
                (`#(error ,_reason) 'false)))))
 
 (defun delete-ticket (handler token)
-  (andalso (erlang:function_exported handler 'delete_ticket 1)
+  (andalso (exported? handler 'delete_ticket 1)
            (case (call handler 'delete_ticket token)
              ('ok                'true)
              (`#(error ,_reason) 'false))))
