@@ -2,7 +2,7 @@
 
 {application,    elli_cloudfront,
  [{description,  "Elli middleware to manage CloudFront signed cookies."},
-  {vsn,          "0.0.3"},
+  {vsn,          "0.1.0"},
   {registered,   []},
   {applications, [ kernel
                  , stdlib
