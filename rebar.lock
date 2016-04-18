@@ -1,7 +1,4 @@
-[{<<"clj">>,
-  {git,"git://github.com/lfex/clj.git",
-       {ref,"b935818364ff9b2715345a050c97db81289ae628"}},
-  0},
+[{<<"clj">>,{pkg,<<"clj">>,<<"0.5.0">>},0},
  {<<"elli">>,{pkg,<<"elli">>,<<"1.0.5">>},0},
  {<<"elli_cookie">>,
   {git,"git://github.com/yurrriq/elli_cookie.git",
@@ -23,11 +20,5 @@
   {git,"git://github.com/talentdeficit/jsx.git",
        {ref,"3074d4865b3385a050badf7828ad31490d860df5"}},
   1},
- {<<"kla">>,
-  {git,"git://github.com/lfex/kla.git",
-       {ref,"a8afc4f673809d89b6c4a374b972f54ef6b39bde"}},
-  1},
- {<<"lfe">>,
-  {git,"git://github.com/rvirding/lfe.git",
-       {ref,"d9a4e4d26a40ddae5aea09244fcd7260cac3f4ac"}},
-  0}].
+ {<<"kla">>,{pkg,<<"kla">>,<<"0.7.0">>},1},
+ {<<"lfe">>,{pkg,<<"lfe">>,<<"1.0.2">>},1}].
