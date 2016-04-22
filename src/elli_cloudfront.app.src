@@ -2,7 +2,7 @@
 
 {application, elli_cloudfront, [
   {description,  "Elli middleware to manage CloudFront signed cookies."},
-  {vsn,          "0.1.0"},
+  {vsn,          "0.1.1"},
   {registered,   []},
   {applications, [kernel, stdlib]},
   %% https://github.com/fcheung/cloudfront-demo/blob/master/.env.test

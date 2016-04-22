@@ -2,7 +2,7 @@
   (doc "CloudFront cookie signing handler.")
   (behaviour elli_handler)
   ;; elli_handler callbacks
-  (export (handle 2) #|(handle_event 3)|#)
+  (export (handle 2) (handle_event 3))
   ;; CloudFront signed cookies
   (export (cookie_data 3))
   ;; CloudFront signed URL (or query params)
@@ -11,9 +11,34 @@
   (export (get_env 1))
   (import (rename erlang ((function_exported 3) exported?))))
 
-(include-lib "clj/include/compose.lfe")
-
 (include-lib "elli_cloudfront/include/elli_cloudfront.hrl")
+
+
+;;;===================================================================
+;;; Useful macros
+;;;===================================================================
+
+(defmacro ->
+  "Thread `x` through the `sexps`.
+
+  Insert `x` as the second item in the first `sexp`, making it a list if it is
+  not a list already. If there are more `sexps`, insert the first `sexp` as the
+  second item in the second `sexp`, etc."
+  ([x]                   x)
+  ([x `(,sexp . ,sexps)] `(,sexp ,x ,@sexps))
+  ([x sexp]              `(list ,sexp ,x))
+  ([x sexp . sexps]      `(-> (-> ,x ,sexp) ,@sexps)))
+
+(defmacro ->>
+  "Thread `x` through the `sexps`.
+
+  Insert `x` as the last item in the first `sexp`, making it a list if it is
+  not a list already. If there are more `sexps`, insert the first `sexp` as the
+  last item in the second `sexp`, etc."
+  ([x]                   x)
+  ([x `(,sexp . ,sexps)] `(,sexp ,@sexps ,x))
+  ([x sexp]              `(list ,sexp ,x))
+  ([x sexp . sexps]      `(->> (->> ,x ,sexp) ,@sexps)))
 
 (defmacro doto
   "Evaluate all given s-expressions and functions in order,
@@ -41,12 +66,7 @@
          ('true                              'ignore)))
   ([_req _args] 'ignore))
 
-#|
-(defun handle_event
-  (['elli_startup args config]
-   'ok)
-  ([_event        _args _config] 'ok))
-|#
+(defun handle_event (_event _args _config) 'ok)
 
 
 ;;;===================================================================
