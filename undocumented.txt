@@ -1,2 +1,3 @@
 == elli_cloudfront ==
+handle_event/3
 handle/2
