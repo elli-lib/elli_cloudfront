@@ -1,5 +1,5 @@
 (defmodule elli_cloudfront
-  (doc "CloudFront cookie signing handler.")
+  (doc "Elli handler for signing CloudFront requests.")
   (behaviour elli_handler)
   ;; elli_handler callbacks
   (export (handle 2) (handle_event 3))
@@ -7,8 +7,10 @@
   (export (cookie_data 3))
   ;; CloudFront signed URL (or query params)
   (export (signed_params 3) (signed_url 3))
-  ;; Config helper function
-  (export (get_env 1))
+  ;; Config helper functions
+  (export (get_env 1) (key_pair_id 1) (private_key 1))
+  ;; Expiry functions
+  (export (from_now 1) (from_now 2))
   (import (rename erlang ((function_exported 3) exported?))))
 
 (include-lib "elli_cloudfront/include/elli_cloudfront.hrl")

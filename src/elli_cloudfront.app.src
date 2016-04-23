@@ -1,8 +1,8 @@
 %% -*- erlang -*-
 
 {application, elli_cloudfront, [
-  {description,  "Elli middleware to manage CloudFront signed cookies."},
-  {vsn,          "0.1.1"},
+  {description,  "Elli middleware to manage CloudFront signed requests."},
+  {vsn,          "0.1.2"},
   {registered,   []},
   {applications, [kernel, stdlib]},
   %% https://github.com/fcheung/cloudfront-demo/blob/master/.env.test
