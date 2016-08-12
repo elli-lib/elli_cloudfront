@@ -12,7 +12,7 @@
   {maintainers,  ["Eric Bailey"]},
   {licenses,     ["BSD-3"]},
   {links, [
-    {"GitHub",        "https://github.com/yurrriq/elli_cloudfront"},
-    {"Documentation", "http://yurrriq.codes/elli_cloudfront"}
+    {"GitHub",        "https://github.com/elli-lib/elli_cloudfront"},
+    {"Documentation", "http://elli-lib.github.io/elli_cloudfront"}
   ]}
 ]}.
