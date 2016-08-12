@@ -1,6 +1,6 @@
 [{<<"elli">>,{pkg,<<"elli">>,<<"1.0.5">>},0},
  {<<"elli_cookie">>,
-  {git,"git://github.com/yurrriq/elli_cookie.git",
+  {git,"git://github.com/elli-lib/elli_cookie.git",
        {ref,"a45e7cd13b8084d1010da708f07cbfd1163fccb8"}},
   0},
  {<<"json">>,
