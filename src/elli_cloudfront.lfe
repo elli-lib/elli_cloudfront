@@ -1,5 +1,5 @@
 (defmodule elli_cloudfront
-  (doc "Elli handler for signing CloudFront requests.")
+  "Elli handler for signing CloudFront requests."
   (behaviour elli_handler)
   ;; elli_handler callbacks
   (export (handle 2) (handle_event 3))
