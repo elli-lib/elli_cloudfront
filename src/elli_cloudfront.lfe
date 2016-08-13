@@ -266,7 +266,7 @@
   (let* ((expiry*   (from_now expiry))
          (condition `[#(#"DateLessThan" [#(#"AWS:EpochTime" ,expiry*)])])
          (statement `[[#(#"Resource" ,url) #(#"Condition" ,condition)]]))
-    (jsx:to_binary `[#(#"Statement" ,statement)])))
+    (jsx:encode `[#(#"Statement" ,statement)])))
 
 (defun sign (data pem-bin)
   (->> (pem->key pem-bin)
