@@ -2,9 +2,9 @@
 
 {application, elli_cloudfront, [
   {description,  "Elli middleware to manage CloudFront signed requests."},
-  {vsn,          "0.3.2"},
+  {vsn,          "0.3.3"},
   {registered,   []},
-  {applications, [kernel, stdlib]},
+  {applications, [kernel, stdlib, jsx]},
   %% https://github.com/fcheung/cloudfront-demo/blob/master/.env.test
   {env,          [{key_pair_id, <<"AKEXAMPLE123">>}]},
   {modules,      [elli_cloudfront, elli_cloudfront_handler]},
