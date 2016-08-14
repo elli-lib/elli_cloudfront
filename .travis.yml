@@ -3,13 +3,14 @@ git:
   submodules: false
 install: true
 before_script:
-    - wget https://s3.amazonaws.com/rebar3/rebar3
-    - chmod +x rebar3
+  - wget https://s3.amazonaws.com/rebar3/rebar3
+  - chmod +x rebar3
 env: PATH=$PATH:.
 script: rebar3 compile
 notifications:
   email: false
 otp_release:
-  - 18.2
+  - 19.0
+  - 18.3
   - 17.5
   - 17.0
