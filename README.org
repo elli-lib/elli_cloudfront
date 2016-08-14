@@ -3,7 +3,7 @@
 
 * elli_cloudfront
 [[https://travis-ci.org/elli-lib/elli_cloudfront][file:https://travis-ci.org/elli-lib/elli_cloudfront.svg?branch=master]]
-[[https://github.com/elli-lib/elli_cloudfront/releases/latest][file:https://img.shields.io/github/tag/elli-lib/elli_cloudfront.svg]]
+[[https://hex.pm/packages/elli_cloudfront][file:https://img.shields.io/hexpm/v/elli_cloudfront.svg]]
 [[https://github.com/erlang/otp/releases][file:https://img.shields.io/badge/erlang-%3E%3D%2017.0-red.svg]]
 [[http://elli-lib.github.io/elli_cloudfront][file:https://img.shields.io/badge/docs-80%25-green.svg]]
 [[file:LICENSE][file:https://img.shields.io/badge/license-BSD-blue.svg]]
