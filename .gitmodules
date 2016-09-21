@@ -1,4 +1,0 @@
-[submodule "doc"]
-	path   = doc
-	url    = git@github.com:elli-lib/elli_cloudfront.git
-	branch = gh-pages
