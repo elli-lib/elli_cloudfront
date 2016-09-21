@@ -1,11 +1,8 @@
 <!-- -*- markdown -*- -->
-This is a Literate Lisp Flavoured Erlang ([LLFE][]) file,
-which generates [example-cf-handler.lfe][] and [example.lfe][].
+This is a Literate Lisp Flavoured Erlang ([LLFE]) file,
+which generates `example-cf-handler.lfe` and `example.lfe`.
 
 [LLFE]: https://github.com/llfe/llfe
-[example-cf-handler.lfe]: example-cf-handler.lfe
-[example.lfe]: example.lfe
-
 
 # Example `elli_cloudfront_handler`
 ```{.lfe name="file:example-cf-handler.lfe"}
@@ -143,10 +140,7 @@ time one hour from now.
 Finally, a...
 ```{.lfe name="file:example.lfe"}
 
-
-;;;===================================================================
-;;; Contrived example
-;;;===================================================================
+;;; ====================================================== [ Contrived example ]
 
 ```
 

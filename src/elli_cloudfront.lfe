@@ -1,12 +1,19 @@
+;;; ==================================================== [ elli_cloudfront.lfe ]
+
 (defmodule elli_cloudfront
-  "Elli handler for signing CloudFront requests."
+  "[Elli handler][1] for signing CloudFront requests.
+
+  Based on the Ruby version in this [blog post][2].
+
+  [1]: https://github.com/elli-lib/elli/blob/master/doc/elli_handler.md
+  [2]: http://www.spacevatican.org/2015/5/1/using-cloudfront-signed-cookies/"
   (behaviour elli_handler)
   ;; elli_handler callbacks
   (export (handle 2) (handle_event 3))
   ;; CloudFront signed cookies
   (export (cookie_data 3))
   ;; CloudFront signed URL (or query params)
-  (export (signed_params 3) (signed_url 3))
+  (export (signed_url 3) (signed_params 3))
   ;; Config helper functions
   (export (get_env 1) (key_pair_id 1) (private_key 1))
   ;; Expiry functions
@@ -14,73 +21,27 @@
   (import (rename erlang ((function_exported 3) exported?))))
 
 (include-lib "elli_cloudfront/include/elli_cloudfront.hrl")
+(include-lib "lfe/include/clj.lfe")
 
+;;; ================================================= [ elli_handler callbacks ]
 
-;;;===================================================================
-;;; Useful macros
-;;;===================================================================
+(defun handle (req args)
+  ;; TODO: write docstring
+  (let ((path (elli_request:path req)))
+    (case (elli_request:method req)
+      (method (when (orelse (=:= 'GET  method)
+                            (=:= 'HEAD method)))
+              (cond ((=:= (get_ticket_path  args) path) (get-ticket  req args))
+                    ((=:= (set_cookies_path args) path) (set-cookies req args))
+                    ('true                              'ignore)))
+      (_method 'ignore))))
 
-(defmacro ->
-  "Thread `x` through the `sexps`.
+(defun handle_event (_event _args _config)
+  "Return the atom `ok`, irrespective of input, to conform to the `elli_handler`
+  behaviour."
+  'ok)
 
-  Insert `x` as the second item in the first `sexp`, making it a list if it is
-  not a list already. If there are more `sexps`, insert the first `sexp` as the
-  second item in the second `sexp`, etc."
-  ([x]                   x)
-  ([x `(,sexp . ,sexps)] `(,sexp ,x ,@sexps))
-  ([x sexp]              `(list ,sexp ,x))
-  ([x sexp . sexps]      `(-> (-> ,x ,sexp) ,@sexps)))
-
-(defmacro ->>
-  "Thread `x` through the `sexps`.
-
-  Insert `x` as the last item in the first `sexp`, making it a list if it is
-  not a list already. If there are more `sexps`, insert the first `sexp` as the
-  last item in the second `sexp`, etc."
-  ([x]                   x)
-  ([x `(,sexp . ,sexps)] `(,sexp ,@sexps ,x))
-  ([x sexp]              `(list ,sexp ,x))
-  ([x sexp . sexps]      `(->> (->> ,x ,sexp) ,@sexps)))
-
-(defmacro doto
-  "Evaluate all given s-expressions and functions in order,
-  for their side effects, with the value of `x` as the first argument
-  and return `x`."
-  (`[,x . ,sexps]
-   `(let ((,'x* ,x))
-      ,@(lists:map
-          (match-lambda
-            ([`(,f . ,args)] `(,f ,'x* ,@args))
-            ([f]             `(,f ,'x*)))
-          sexps)
-      ,'x*)))
-
-
-;;;===================================================================
-;;; elli_handler callbacks
-;;;===================================================================
-
-(defun handle
-  ([(= (match-req method method path path) req) args]
-   (when (orelse (=:= 'GET method) (=:= 'HEAD method)))
-   (cond ((=:= (get_ticket_path args)  path) (get-ticket req args))
-         ((=:= (set_cookies_path args) path) (set-cookies req args))
-         ('true                              'ignore)))
-  ([_req _args] 'ignore))
-
-(defun handle_event (_event _args _config) 'ok)
-
-
-;;;===================================================================
-;;; CloudFront cookie signing functions
-;;;
-;;; Based on the Ruby version in this blog post:
-;;; http://www.spacevatican.org/2015/5/1/using-cloudfront-signed-cookies/
-;;;
-;;; cookie_data/3  returns a property list of cookies.
-;;; get-ticket/2   handles GET /auth/get_ticket (or custom route)
-;;; set-cookies/2  handles GET /auth/set_cookies (or custom route)
-;;;===================================================================
+;;; =============================================== [ Cookie signing functions ]
 
 (defun cookie_data (resource expiry args)
   "Given a binary `resource` URL, `expiry` (`` `#(,n ,unit) ``),
@@ -94,13 +55,6 @@
 
   See also: [[key_pair_id/1]] and [[private_key/1]]"
   (cred->cookies (credentials resource expiry args)))
-
-(defun cred->cookies (cred)
-  (-> (match-lambda
-        ([`#(policy      ,value)] `#(#"CloudFront-Policy"      ,value))
-        ([`#(signature   ,value)] `#(#"CloudFront-Signature"   ,value))
-        ([`#(key_pair_id ,value)] `#(#"CloudFront-Key-Pair-Id" ,value)))
-      (lists:map cred)))
 
 (defun signed_url (resource expiry args)
   "Equivalent to [[cookie_data/3]], but returns a signed URL.
@@ -119,10 +73,94 @@
   "Equivalent to [[signed_url/3]], but returns a proplist of URL parameters."
   (cred->params (credentials resource expiry args)))
 
-(defun params->query-string (params)
-  (->> params
-       (lists:map (match-lambda ([`#(,k ,v)] `[,k #"=" ,v])))
-       (intersperse #"&")))
+;;; ================================================ [ Config helper functions ]
+
+(defun get_env (app)
+  "Given an `app` name, return a property list with keys,
+  `` 'key_pair_id `` and `` 'private_key ``.
+
+  If either are missing, throw a descriptive error.
+
+  `key_pair_id` must be present in `elli_cloudfront`'s env and `private_key`
+  is the contents `{{key_pair_id}}.key` in `app`'s `priv` directory.
+
+  If the `.key` file cannot be found, throw an error."
+  (->> (application:get_env (MODULE) 'key_pair_id 'undefined)
+       (tuple 'key_pair_id) (list)
+       (get_env (priv_dir app))))
+
+(defun key_pair_id (args)
+  "Given a proplist of `args`, return the `` 'key_pair_id ``.
+
+  If it is missing, throw `#(error #(missing key_pair_id))`."
+  (case (proplists:get_value 'key_pair_id args)
+    ('undefined (error #(missing key_pair_id) (list args)))
+    (value      (assert-binary 'key_pair_id value))))
+
+(defun private_key (args)
+  "Given a proplist of `args`, return the `` 'private_key ``.
+
+  If it is missing, throw `#(error #(missing private_key))`."
+  (case (proplists:get_value 'private_key args)
+    ('undefined (error #(missing private_key) (list args)))
+    (value      (->> value (assert-binary 'private_key)))))
+
+;;; ======================================================= [ Expiry functions ]
+
+(defun from_now
+  "Return the the number of seconds the Unix epoch `n` `unit`s from now."
+  ([0 _unit]   (now))
+  ([1 'day]    (from_now 1 'days))
+  ([1 'hour]   (from_now 1 'hours))
+  ([1 'minute] (from_now 1 'minutes))
+  ([1 'second] (from_now 1 'seconds))
+  ([n 'days] (when (is_integer n) (> n 0))
+   (from_now (days n)))
+  ([n 'hours] (when (is_integer n) (> n 0))
+   (from_now (hours n)))
+  ([n 'minutes] (when (is_integer n) (> n 0))
+   (from_now (minutes n)))
+  ([n 'seconds] (when (is_integer n) (> n 0))
+   (from_now n))
+  ([n unit] (error 'invalid_time_diff (list n unit))))
+
+(defun from_now
+  "Equivalent to [[from_now/2]] but with a single argument, `` `#(,n ,unit) ``.
+
+  [[from_now/1]] will also accept a non-negative integer, `n`,
+  and treat it as `` `#(,n seconds) ``."
+  ;; n seconds
+  ([0] (now))
+  ([n] (when (is_integer n) (> n 0))
+   (+ n (now)))
+  ;; `#(,n ,unit)
+  ([`#(0 ,_unit)] (now))
+  ([#(1 day)]     (from_now #(1 days)))
+  ([#(1 hour)]    (from_now #(1 hours)))
+  ([#(1 minute)]  (from_now #(1 minutes)))
+  ([#(1 second)]  (from_now #(1 seconds)))
+  ([`#(,n days)]    (when (is_integer n) (> n 0)) (from_now (days n)))
+  ([`#(,n hours)]   (when (is_integer n) (> n 0)) (from_now (hours n)))
+  ([`#(,n minutes)] (when (is_integer n) (> n 0)) (from_now (minutes n)))
+  ([`#(,n seconds)] (when (is_integer n) (> n 0)) (from_now n))
+  ([x] (error 'invalid_time_diff (list x))))
+
+;;; ===================================================== [ Internal functions ]
+
+(defun cred->cookies (cred)
+  (lists:map
+    (match-lambda
+      ([`#(policy      ,value)] `#(#"CloudFront-Policy"      ,value))
+      ([`#(signature   ,value)] `#(#"CloudFront-Signature"   ,value))
+      ([`#(key_pair_id ,value)] `#(#"CloudFront-Key-Pair-Id" ,value)))
+    cred))
+
+(defun params->query-string
+  ([()] ())
+  ([`(#(,key ,value) . ,params)]
+   (lists:foldl
+     (match-lambda ([`#(,k ,v) acc] (list acc #\& k #\= v)))
+     `[,key #\= ,value] params)))
 
 (defun cred->params (cred)
   (-> (match-lambda
@@ -188,65 +226,30 @@
              ('ok                'true)
              (`#(error ,_reason) 'false))))
 
-
-;;;===================================================================
-;;; Config helper functions
-;;;===================================================================
-
-(defun get_env (app)
-  "Given an `app` name, return a property list with keys,
-  `` 'key_pair_id `` and `` 'private_key ``.
-
-  If either are missing, throw a descriptive error.
-
-  `key_pair_id` must be present in `elli_cloudfront`'s env and `private_key`
-  is the contents `{{key_pair_id}}.key` in `app`'s `priv` directory.
-
-  If the `.key` file cannot be found, throw an error."
-  (->> (application:get_env (MODULE) 'key_pair_id 'undefined)
-       (tuple 'key_pair_id) (list)
-       (get_env (priv_dir app))))
-
 (defun get_env (priv-dir args)
   (-> (->> (let*  ((key_pair_id (key_pair_id args)) ; Validate key_pair_id
                    (key-file    (++ (binary_to_list key_pair_id) ".key")))
              (try
-               (let ((`#(ok ,private_key) (->> (filename:join priv-dir key-file)
-                                               (file:read_file))))
-                 (cons `#(private_key ,private_key)
-                       (proplists:delete 'private_key args)))
+               (let ((`#(ok ,private_key)
+                      (file:read_file (filename:join priv-dir key-file))))
+                 (lists:keystore 'private_key 1 args
+                                 `#(private_key ,private_key)))
                (catch
-                 (_ (throw `#(error #(missing ,key-file))))))))
+                 (_ (error `#(missing ,key-file) (list priv-dir args)))))))
       (doto (private_key))))            ; Validate private_key
 
 (defun handler (args)
   (case (proplists:get_value 'handler args)
-    ('undefined (throw #(error #(missing handler))))
+    ('undefined (error #(missing handler) (list args)))
     (handler    handler)))
-
-(defun key_pair_id (args)
-  "Given a proplist of `args`, return the `` 'key_pair_id ``.
-
-  If it is missing, throw `#(error #(missing key_pair_id))`."
-  (case (proplists:get_value 'key_pair_id args)
-    ('undefined (throw #(error #(missing key_pair_id))))
-    (value      (->> value (assert-binary 'key_pair_id)))))
-
-(defun private_key (args)
-  "Given a proplist of `args`, return the `` 'private_key ``.
-
-  If it is missing, throw `#(error #(missing private_key))`."
-  (case (proplists:get_value 'private_key args)
-    ('undefined (throw #(error #(missing private_key))))
-    (value      (->> value (assert-binary 'private_key)))))
 
 (defun priv_dir (app)
   (case (code:priv_dir app)
-    (#(error bad_name) (throw `#(error #(bad_name ,app))))
+    (#(error bad_name) (error 'bad_name (list app)))
     (priv_dir          priv_dir)))
 
 (defun assert-binary (k v)
-  (if (is_binary v) v (throw `#(error #(non_binary ,k ,v)))))
+  (if (is_binary v) v (error 'non_binary (list k v))))
 
 (defun get_ticket_path (args)
   "Given a property list of `args`, return the value of `` 'get_ticket_path ``.
@@ -257,10 +260,7 @@
 (defun set_cookies_path (args)
   (proplists:get_value 'set_cookies_path args '[#"auth" #"set_cookies"]))
 
-
-;;;===================================================================
-;;; Cookie signing
-;;;===================================================================
+;;; ========================================================= [ Cookie signing ]
 
 (defun policy (url expiry)
   (let* ((expiry*   (from_now expiry))
@@ -281,15 +281,14 @@
   (fold-replace (base64:encode data)
     '[#("\\+" "-") #("=" "_") #("/" "~")]))
 
-
 (defun service (req)
   (case (elli_request:get_arg_decoded #"service" req)
-    ('undefined (throw `#(error #(missing service ,req))))
+    ('undefined (error #(missing service) (list req)))
     (service    service)))
 
 (defun ticket (req)
   (case (elli_request:get_arg_decoded #"ticket" req)
-    ('undefined (throw `#(error #(missing ticket ,req))))
+    ('undefined (error #(missing ticket) (list req)))
     (token      token)))
 
 (defun set_cookies_location (service token args)
@@ -317,13 +316,10 @@
 (defun redirect (headers location)
   `#(302 [#(#"Location" ,(iolist_to_binary location)) . ,headers] #""))
 
-
-;;;===================================================================
-;;; URL helper functions
-;;;
+;;; =================================================== [ URL helper functions ]
 ;;; Based on:
 ;;; http://amtal.ca/2011/07/19/unix-pipes-pointless-functional-programming.html
-;;;===================================================================
+;;; ============================================================================
 
 (defun get-host (url)
   (-> (strip-protocol url) (strip-path) (strip-port) (lower-case)))
@@ -337,10 +333,7 @@
   ([(binary "https://" (rest bytes))] rest)
   ([x]                                x))
 
-
-;;;===================================================================
-;;; List and string functions
-;;;===================================================================
+;;; ============================================== [ List and string functions ]
 
 (defun lower-case
   "Convert a given `bin`ary or `str`ing to all lower-case."
@@ -355,106 +348,11 @@
       ([`#(,patt ,replacement) acc]
        (re:replace acc patt replacement `[global #(return ,return-type)])))
     string pairs))
-
-(defun intersperse
-  "Given a element and a list, intersperse that element between the elemensts
-  of the list. For example,
-
-  ```lfe
-  > (intersperse #\, \"abcde\")
-  \"a,b,c,d,e\"
-  ```
-
-  Ported from Haskell's [`Data.List.intersperse`](https://hackage.haskell.org/package/base-4.8.2.0/docs/src/Data.OldList.html#intersperse)."
-  ([_    ()]          [])
-  ([sep `(,x . ,xs)] `[,x . ,(-intersperse sep xs)]))
-
-(defun -intersperse
-  ([_    ()]          [])
-  ([sep `(,x . ,xs)] `[,sep ,x . ,(-intersperse sep xs)]))
-
-
-;;;===================================================================
-;;; Expiry functions
-;;;===================================================================
-
-(defmacro bad-time-diff (diff) `(throw `#(error #(invalid-time-diff ,'diff))))
-
 (defun now ()
   "Return the number of seconds since the Unix epoch."
+  ;; TODO: Update for 18+
   (let ((`#(,mega-secs ,secs ,_micro-secs) (os:timestamp)))
     (+ (* mega-secs 1000000) secs)))
-
-(defun from_now
-  "Return the the number of seconds the Unix epoch `n` `unit`s from now.
-
-  ```erlang
-  n    :: non_neg_integer(),
-  unit :: days | hours | minutes | seconds.
-  %% unless 1 =:= n, in which case
-  %% unit :: day | hour | minute | second
-  ```
-
-  #### Example Usage
-
-  ```lfe
-  > (from_now 0 'days)
-  1458994421
-  > (from_now 1 'hour)
-  1458998024
-  > (from_now 60 'minutes)
-  1458998026
-  ```"
-  ([0 _unit]   (now))
-  ([1 'day]    (from_now 1 'days))
-  ([1 'hour]   (from_now 1 'hours))
-  ([1 'minute] (from_now 1 'minutes))
-  ([1 'second] (from_now 1 'seconds))
-  ([n 'days] (when (is_integer n) (> n 0))
-   (from_now (days n)))
-  ([n 'hours] (when (is_integer n) (> n 0))
-   (from_now (hours n)))
-  ([n 'minutes] (when (is_integer n) (> n 0))
-   (from_now (minutes n)))
-  ([n 'seconds] (when (is_integer n) (> n 0))
-   (from_now n))
-  ([n unit] (bad-time-diff `#(,n ,unit))))
-
-(defun from_now
-  "Equivalent to [[from_now/2]] but with a single argument, `` `#(,n ,unit) ``.
-
-  [[from_now/1]] will also accept a non-negative integer, `n`,
-  and treat it as `` `#(,n seconds) ``.
-
-  #### Example Usage
-
-  ```lfe
-  > (from_now 42)
-  1458994427
-  > (from_now #(0 days))
-  1458994387
-  > (from_now #(1 hour))
-  1458997992
-  > (from_now #(60 minutes))
-  1458997996
-  > (from_now (+ (days 1) (hours 6)))
-  1459102403
-  ```"
-  ;; n seconds
-  ([0] (now))
-  ([n] (when (is_integer n) (> n 0))
-   (+ n (now)))
-  ;; `#(,n ,unit)
-  ([`#(0 ,_unit)] (now))
-  ([#(1 day)]     (from_now #(1 days)))
-  ([#(1 hour)]    (from_now #(1 hours)))
-  ([#(1 minute)]  (from_now #(1 minutes)))
-  ([#(1 second)]  (from_now #(1 seconds)))
-  ([`#(,n days)]    (when (is_integer n) (> n 0)) (from_now (days n)))
-  ([`#(,n hours)]   (when (is_integer n) (> n 0)) (from_now (hours n)))
-  ([`#(,n minutes)] (when (is_integer n) (> n 0)) (from_now (minutes n)))
-  ([`#(,n seconds)] (when (is_integer n) (> n 0)) (from_now n))
-  ([x] (bad-time-diff x)))
 
 (defun days
   "Return the number of seconds in `n` days."
@@ -476,3 +374,5 @@
   ([1] 60)
   ([n] (when (is_integer n) (> n 0))
    (* n (minutes 1))))
+
+;;; ==================================================================== [ EOF ]

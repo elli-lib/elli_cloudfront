@@ -1,3 +1,12 @@
-[{<<"elli">>,{pkg,<<"elli">>,<<"1.0.5">>},0},
- {<<"elli_cookie">>,{pkg,<<"elli_cookie">>,<<"0.1.7">>},0},
- {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0}].
+{"1.1.0",
+[{<<"elli_cookie">>,{pkg,<<"elli_cookie">>,<<"0.2.9">>},0},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
+ {<<"lfe">>,
+  {git,"git://github.com/yurrriq/lfe.git",
+       {ref,"fcdd4f9de5dce0eacde0ed9a24821ba697da77e0"}},
+  0}]}.
+[
+{pkg_hash,[
+ {<<"elli_cookie">>, <<"CD3F65747FA14487F5A993FD525C52D668BCD580E048C52A3CFD6EA0859B7D52">>},
+ {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>}]}
+].
